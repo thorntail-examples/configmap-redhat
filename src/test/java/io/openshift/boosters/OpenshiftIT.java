@@ -19,16 +19,17 @@ package io.openshift.boosters;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URL;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
-import io.restassured.RestAssured;
-import io.restassured.response.Response;
 import io.fabric8.kubernetes.api.model.ConfigMap;
 import io.fabric8.kubernetes.api.model.Pod;
 import io.fabric8.kubernetes.client.internal.readiness.Readiness;
 import io.fabric8.openshift.client.OpenShiftClient;
+import io.restassured.RestAssured;
+import io.restassured.response.Response;
 import org.arquillian.cube.kubernetes.api.Session;
 import org.arquillian.cube.openshift.impl.enricher.AwaitRoute;
 import org.arquillian.cube.openshift.impl.enricher.RouteURL;
@@ -40,10 +41,10 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.MethodSorters;
 
-import static org.awaitility.Awaitility.await;
 import static io.restassured.RestAssured.get;
 import static io.restassured.RestAssured.given;
 import static io.restassured.RestAssured.when;
+import static org.awaitility.Awaitility.await;
 import static org.hamcrest.Matchers.containsString;
 import static org.junit.Assert.assertTrue;
 
@@ -65,15 +66,15 @@ public class OpenshiftIT {
 
     @RouteURL("${app.name}")
     @AwaitRoute
-    private String url;
+    private URL url;
 
     @Before
-    public void setup() {
+    public void setup() throws Exception {
         RestAssured.baseURI = url + "api/greeting";
     }
 
     @Test
-    public void testAConfigMapExists() {
+    public void testAConfigMapExists() throws Exception {
         Optional<ConfigMap> configMap = findConfigMap();
         assertTrue(configMap.isPresent());
     }
@@ -82,7 +83,7 @@ public class OpenshiftIT {
     public void testBDefaultGreeting() {
         when()
                 .get()
-        .then()
+                .then()
                 .assertThat().statusCode(200)
                 .assertThat().body(containsString("Hello World from a ConfigMap!"));
     }
@@ -91,9 +92,9 @@ public class OpenshiftIT {
     public void testCCustomGreeting() {
         given()
                 .queryParam("name", "Steve")
-        .when()
+                .when()
                 .get()
-        .then()
+                .then()
                 .assertThat().statusCode(200)
                 .assertThat().body(containsString("Hello Steve from a ConfigMap!"));
     }
@@ -106,7 +107,7 @@ public class OpenshiftIT {
 
         when()
                 .get()
-        .then()
+                .then()
                 .assertThat().statusCode(200)
                 .assertThat().body(containsString("Good morning World from an updated ConfigMap!"));
     }
